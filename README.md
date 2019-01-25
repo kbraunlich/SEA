@@ -7,7 +7,8 @@ Code for modeling bidirectional influences of information-sampling and concept-l
 - Python 3+
 - Numpy
 
-## Recommended (required for some demo simulations):
+## Recommended 
+Required for some existing simulations
 - tqdm (https://github.com/tqdm/tqdm)
 - pandas
 - seaborn
