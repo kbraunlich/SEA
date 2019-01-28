@@ -301,7 +301,6 @@ class RMC:
         '''return Fpredictions (eq. 2)'''
         return self.Fpredictions[0][ITEM_VEC[0]]
 
-
     def SituationValue(self, ITEM_VEC, KNOWN_VEC):
         '''Takes a situation and computes its value by maximizing over the
         action.
