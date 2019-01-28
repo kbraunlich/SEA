@@ -301,13 +301,6 @@ class RMC:
         '''return Fpredictions (eq. 2)'''
         return self.Fpredictions[0][ITEM_VEC[0]]
 
-    def ResponseCorrect(self, ITEM_VEC, QUERY_VEC):
-        '''returns 1 if the model guesses right, 0 otherwise'''
-        prob = self.ResponseCorrectProb(ITEM_VEC, QUERY_VEC)
-        if prob > np.random.uniform(0, 1):  # correct
-            return 1
-        else:
-            return 0
 
     def SituationValue(self, ITEM_VEC, KNOWN_VEC):
         '''Takes a situation and computes its value by maximizing over the
