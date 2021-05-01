@@ -1,7 +1,7 @@
 # SEA
 Sampling Emergent Attention
 
-Code for modeling bidirectional influences of information-sampling and concept-learning.
+Code for modeling bidirectional influences of information-sampling and concept-learning. https://psyarxiv.com/48ept/
 
 ## Requirements
 - Python 3+
