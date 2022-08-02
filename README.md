@@ -1,4 +1,5 @@
-# Sampling Emergent Attention (Psychological Review](https://psycnet.apa.org/fulltext/2021-62589-001.pdf))
+# Sampling Emergent Attention 
+Full text available at [Psychological Review](https://psycnet.apa.org/fulltext/2021-62589-001.pdf)
 
 ## Requirements
 - Python 3+
