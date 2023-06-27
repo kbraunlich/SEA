@@ -1,4 +1,5 @@
 #!/usr/bin/python
+"""Sampling Emergent Attention: SEA."""
 
 
 import numpy as np
@@ -8,10 +9,13 @@ overall_time = {"stim": 0.0, "learn": 0.0, "add": 0.0, "decide": 0.0}
 
 # %%
 def SoftMaxChoice(arrayV, d):
-    '''Input:
+    """Softmax choice.
+
+    Inputs:
 
     - arrayV[i] = choiceValuesD[i] = ComputeValueOfUnknownDim(... )
-    - d: decision parameter'''
+    - d: decision parameter
+    """
     tempV = np.exp(d * arrayV)
     tempV = tempV / np.add.reduce(tempV)
     tempV = np.cumsum(tempV)
@@ -23,7 +27,7 @@ def SoftMaxChoice(arrayV, d):
 
 
 def ProbMatchChoice(arrayV, d):
-    '''arrayV are the values, d is the decision parameter'''
+    """Values are arrayV and d is the decision parameter."""
     tempV = pow(arrayV, d)
     tempV = tempV / np.add.reduce(tempV)
     tempV = np.cumsum(tempV)
@@ -35,7 +39,7 @@ def ProbMatchChoice(arrayV, d):
 
 
 def ComputeValueOfUnknownDim(model, theDim, itemA, knownL, recursion_level):
-    '''given dim, item and known, returns the value of sampling the dim.
+    """Given dim, item and known, returns the value of sampling the dim.
 
     - for dim i, iterate over values, j.
             - each time calculate feature value
@@ -45,7 +49,7 @@ def ComputeValueOfUnknownDim(model, theDim, itemA, knownL, recursion_level):
 
     combine utility of each j with prob of each feature:
             - np.inner(self.Fpredictions[theDim],outcomeValues)
-    '''
+    """
     recursion_level += 1
     if model.report:
         print(
@@ -73,17 +77,16 @@ def ComputeValueOfUnknownDim(model, theDim, itemA, knownL, recursion_level):
 
 
 def DetermineFeatureValue(model, stimulusA, observedL, recursion):
-    '''Given stimulus, and observed features, F, recursively test \
-    unsampled dimensions
+    """Given stimulus and observed features test unsampled dimensions.
 
-    - get situationValue: max(self.Fpredictions[0]) * 100. - self.INFO_COST * \
+    - get situationValue: max(self.Fpredictions[0]) * 100. - self.INFO_COST *
     np.add.reduce(KNOWN_VEC)
     - for each unobserved dim, i,: ComputeValueOfUnknownDim, V_i(F)
     - if V_i(F) > [V(F) + C_i(F)]:
-
             - maxValue=V_i(F)
     - return maxValue
-    '''
+
+    """
     knownA = np.zeros(model.NUM_DIMS)
     knownA[observedL] = 1
 
@@ -93,7 +96,7 @@ def DetermineFeatureValue(model, stimulusA, observedL, recursion):
         print(' -- situationValue=%.2f' % maxValue)
 
     if recursion <= model.det_val_params['MAX_RECURSION_LEVEL']:
-        for i in range(1, model.NUM_DIMS):  # (ignore category label)
+        for i in range(1, model.NUM_DIMS):  # ignore category label
 
             if i not in observedL:
                 tmpStimulusA = np.copy(stimulusA)
@@ -108,31 +111,36 @@ def DetermineFeatureValue(model, stimulusA, observedL, recursion):
 
 
 def foo():
+    """foo."""
     foo.counter += 1
+
 
 foo.counter = 0
 
 
 def GetSampleSet(model, stimulus):
-    '''Given a stimulus, returns an ordered list of dimensions to sample.
+    """Given a stimulus, returns an ordered list of dimensions to sample.
+
     If empty, the agent should respond immediately. Ccurrently assumes that
     all dimensions are initially unknown.
 
-    input:
-
+    Input:
     - stimulus: the 1*nFt vector.
 
-    calculates:
-
+    Calculates:
     - expected situation value:  max(self.Fpredictions[0]) * 100
-    - exploration bonus : (100-expectSituationValue) / pow(model.totalNbyDimension+1,EXPLORATION_PARAM)
+    - exploration bonus : (100-expectSituationValue) /
+        pow(model.totalNbyDimension+1,EXPLORATION_PARAM)
     - choiceValuesD dictionary =  key is the dimension, entry is value
-    - choiceValuesD[i]: explorationBonus[i]+ ComputeValueOfUnknownDim(model, i, stimulus, sampleSet, 0) - expectSituationValue
+    - choiceValuesD[i]: explorationBonus[i] +
+        ComputeValueOfUnknownDim(model, i, stimulus, sampleSet, 0) -
+        expectSituationValue
 
-    returns:
+    Returns:
+    - sampleSet:  ordered list of dimensions to sample. Empty list means
+        respond now.
 
-    - sampleSet:  ordered list of dimensions to sample. empty list means respond now
-    '''
+    """
     if model.report:
         print('stim:', stimulus)
     foo()
@@ -157,7 +165,7 @@ def GetSampleSet(model, stimulus):
             if i not in sampleSet:
                 choiceValuesD[i] = ComputeValueOfUnknownDim(
                     model, i, stimulus, sampleSet, 0) - expectSituationValue \
-                        + explorationBonus[i]
+                    + explorationBonus[i]
 
         arrayV = np.array(np.zeros(len(choiceValuesD)))
         i = 0
@@ -177,12 +185,12 @@ def GetSampleSet(model, stimulus):
 
     return sampleSet
 
-# %%
 
-
-class RMC:
+class RMC(object):
+    """RMC."""
 
     def __init__(self, param):
+        """Initialize model."""
         self.param = param
         self.COUPLING = param['coupling']
         # first dimension of matrix indexes dimension, second indexes dimension
@@ -214,26 +222,31 @@ class RMC:
             'DECISION_PARAMETER': param['DECISION_PARAMETER']}
 
     def getActionValue(self, action):
-        '''
+        r"""Get action value.
+
         .. math::
-                 E(U(a|F_o)) = \sum_{s \in S} U(a|s)P(s|F_o)'''
-        return np.sum([self.param['dfActionVals'].loc[state, 'a%d' % action] *
-                       self.Fpredictions[0][action] for
+                 E(U(a|F_o)) = \sum_{s \in S} U(a|s)P(s|F_o)
+        """
+        return np.sum([self.param['dfActionVals'].loc[state, 'a%d' % action]
+                       * self.Fpredictions[0][action] for
                        state in self.param['dfActionVals'].index])
 
-    def getStateVal_noCost(self):
-        '''
+    def GetStateValNoCost(self):
+        r"""Get state value without cost.
+
         .. math::
-                E(U(F_o)) = \max_{a \in A} (\mathbb{E}(U(a|F_o))) '''
+                E(U(F_o)) = \max_{a \in A} (\mathbb{E}(U(a|F_o)))
+        """
         actionVals = [self.getActionValue(a) for a in range(
             len(self.param['dfActionVals']))]
         return np.max(actionVals)
 
-    def getSituationCost(self, KNOWN_VEC):
-        return self.param['getSituationCost'](KNOWN_VEC, self.param)
+    def GetSituationCost(self, KNOWN_VEC):
+        """Get situtaion cost."""
+        return self.param['GetSituationCost'](KNOWN_VEC, self.param)
 
     def Reset(self):
-        '''Reset model to init state'''
+        """Reset model to init state."""
         self.clusterN = []
         self.clusterF = []
         self.clusLike = []
@@ -245,7 +258,7 @@ class RMC:
         self.CreateCluster()  # set up the first cluster.
 
     def PresentStimulus(self, ITEM_VEC, KNOWN_VEC):
-        '''returns KnownList: the ordered list of dims to sample '''
+        """Return an ordered list of dims to sample."""
         KnownList = GetSampleSet(self, ITEM_VEC)
         theKnown = np.zeros(self.NUM_DIMS)
         theKnown[KnownList] = 1
@@ -253,24 +266,28 @@ class RMC:
         return KnownList
 
     def Stimulate(self, ITEM_VEC, KNOWN_VEC):
-        '''calculates:
+        """Calculate the following.
 
         - eq 4: priorProbOfClusters
         - probOfEachFeatureGivenCluster: (not eq6)
-        - self.clusLike = probOfEachFeatureGivenCluster*priorProbOfClusters ft*dim
+        - self.clusLike =
+            probOfEachFeatureGivenCluster*priorProbOfClusters ft*dim
         - eq3 = self.clusLike=clusLike/sum(clusLike)
-        - eq2 = self.Fpredictions'''
+        - eq2 = self.Fpredictions
+        """
         start_time = time()
 
         self.priorProbOfClusters = (self.COUPLING * self.clusterN) / (
             (1 - self.COUPLING) + self.COUPLING * self.totalN)  # eq 4
+        # For hypothetical new cluster:
         self.priorProbOfClusters[self.num_clus - 1] = (1.0 - self.COUPLING) / (
-            (1.0 - self.COUPLING) + self.COUPLING * self.totalN)  # for hypothetical new cluster
+            (1.0 - self.COUPLING) + self.COUPLING * self.totalN)
 
         probOfEachFeatureGivenCluster = self.clusterF / np.reshape(
             np.sum(
                 self.clusterF, 2), [
-                self.num_clus, self.NUM_DIMS, 1])  # Includes new hypothetical cluster
+                # Includes new hypothetical cluster:
+                self.num_clus, self.NUM_DIMS, 1])
 
         self.clusLike = np.array(np.ones(self.num_clus), np.float64)
         for i in np.arange(self.NUM_DIMS):  # prob(item | cluster)  Eq. 6
@@ -288,7 +305,8 @@ class RMC:
         self.Fpredictions = sum(
             np.reshape(
                 self.clusLike, [
-                    self.num_clus, 1, 1]) * probOfEachFeatureGivenCluster, 0)  # eq 2
+                    self.num_clus, 1, 1]) *
+            probOfEachFeatureGivenCluster, 0)  # eq 2
 
         for i in np.arange(self.NUM_DIMS):
             if KNOWN_VEC[i]:
@@ -298,21 +316,22 @@ class RMC:
         overall_time["stim"] += time() - start_time
 
     def ResponseCorrectProb(self, ITEM_VEC, QUERY_VEC):
-        '''return Fpredictions (eq. 2)'''
+        """Return Fpredictions (eq. 2)."""
         return self.Fpredictions[0][ITEM_VEC[0]]
 
     def SituationValue(self, ITEM_VEC, KNOWN_VEC):
-        '''Takes a situation and computes its value by maximizing over the
-        action.
+        r"""Take a situation & compute its value by maximizing over the action.
+
         See eq. X.
 
         .. math::
-                 \mathbb{E}(U(F_o)) = \max_{a}  [\sum_{s} U(a|s)P(s|F_o) ] -\sum_{d \in o} C_d
+                 \mathbb{E}(U(F_o)) = \max_{a}  [\sum_{s} U(a|s)P(s|F_o) ] -
+                    \sum_{d \in o} C_d
 
-        '''
+        """
         self.Stimulate(ITEM_VEC, KNOWN_VEC)
-        sv_nocost = self.getStateVal_noCost()
-        cost = self.getSituationCost(KNOWN_VEC)
+        sv_nocost = self.GetStateValNoCost()
+        cost = self.GetSituationCost(KNOWN_VEC)
         sv = sv_nocost - cost
 
         if self.report:
@@ -321,19 +340,19 @@ class RMC:
         return sv
 
     def ExpectedValue(self, ITEM_VEC, KNOWN_VEC):
-        '''ExpectedValue -- expected value of response, same as SituationValue,
-        but without cost,
+        """Return expected value of responseself.
+
+        Like SituationValue but without cost.
 
         - self.Stimulate
-        - return max(self.Fpredictions[0] * state-value.)'''
+        - return max(self.Fpredictions[0] * state-value.)
+        """
         self.Stimulate(ITEM_VEC, KNOWN_VEC)
 
-        return self.getStateVal_noCost()
+        return self.GetStateValNoCost()
 
     def CreateCluster(self):
-        '''creates a new cluster and handles
-                all learning for the trial.'''
-
+        """Create a new cluster and handle all learning for the trial."""
         start_time = time()
 
         self.num_clus += 1  # increase cluster count.
@@ -351,6 +370,7 @@ class RMC:
         overall_time["add"] += time() - start_time
 
     def Learn(self, ITEM_VEC, KNOWN_VEC, QUERY_VEC):
+        """Learn."""
         start_time = time()
         knownV = np.maximum(KNOWN_VEC, QUERY_VEC)
         self.Stimulate(ITEM_VEC, knownV)
@@ -369,7 +389,7 @@ class RMC:
         overall_time["learn"] += time() - start_time
 
     def Report(self):
-        '''	Prints various information about the status of a network'''
+        """	Print various information about the status of a network."""
         print("Clusters:\n", self.clus_pos, "\n")
         print("Attention:\n", self.attention, "\n")
         print("Weights:\n", self.weights, "\n\n\n")
